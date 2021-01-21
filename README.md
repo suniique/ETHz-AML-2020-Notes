@@ -1,6 +1,8 @@
 # ETHz-AML-2020-Notes
 My lecture notes for Advance Machine Learning 2020 at ETH Zurich.
 
+See the PDF: [Here](https://github.com/suniique/ETHz-AML-2020-Notes/blob/main/AML2020_Lecture_Notes.pdf).
+
 This note was made during the 2020 Fall Semester of the course Advanced Machine Learning by Prof. Buhmann and Cotrini at ETH Z ̈urich. The main purpose of writing this is to familiarize me with the concepts and mathematical derivations in the course. Therefore, I do not guarantee the correctness and completeness of it.
 
 

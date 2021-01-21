@@ -1,0 +1,413 @@
+\section{Lagrange Duality \& KKT Conditions}
+Considering the following optimization problem for $\bfx \in \R^d$ with constraints $g(\bfx) \leq 0$ and $h(\bfx) = 0$, 
+\begin{equation}
+	\min_\bfx\ f(\bfx), \quad s.t.\ g_i(\bfx) \leq 0, h_j(\bfx) = 0 \quad (\forall i=[m], j=[n]),
+\end{equation}
+One can form the \textbf{generalized Lagrangian} as
+\begin{equation}
+	\cL(\bfx, \mu, \lambda) = f(\bfx) + \sum_i \mu_i g_i(\bfx) + \sum_j \lambda_j h_j(\bfx), \quad \mu_i \geq 0.
+\end{equation}
+Here, $\mu_i$ and $\lambda_j\ (i=[m], j=[n])$ are the Lagrange multipliers.
+
+\subsection{Primal and Dual Problem}
+With the generalized Lagrangian, the original problem can be turned into an optimization problem without constraints. There are two ways for doing so, which pose the ``primal'' and ``dual'' problem, respectively. 
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}
+\tikzstyle{block} = [minimum size=1.5cm,draw,text width=5cm,text centered]
+\draw (0,0.5) node[block,minimum size=1.75cm,label=above:original problem] (a) {
+$\begin{aligned}
+	\min_\bfx & \quad f(\bfx), \\ s.t. & \quad g_i(\bfx) \leq 0, h_j(\bfx) = 0 
+\end{aligned}$};
+\draw (-5,-2) node[block,label=above:primal problem] (b) {
+$\begin{aligned}
+	\theta_p(\bfx) = \max_{\mu \geq 0, \lambda}\ \cL(\bfx, \mu, \lambda)
+\end{aligned}$};
+\draw (5,-2) node[block,label=above:dual problem] (c) {
+$\begin{aligned}
+	\theta_d(\mu, \lambda) = \min_{\bfx}\ \cL(\bfx, \mu, \lambda)
+\end{aligned}$};
+\draw (-5,-4.5) node[block,label=below:minimize the primal problem] (d) {
+$\begin{aligned}
+	p^* = \min_{\bfx}\max_{\mu \geq 0, \lambda}\ \cL(\bfx, \mu, \lambda)
+\end{aligned}$};
+\draw (5,-4.5) node[block,label=below:maximize the dual problem] (e) {
+$\begin{aligned}
+	d^* = \max_{\mu \geq 0, \lambda} \min_{\bfx}\ \cL(\bfx, \mu, \lambda)
+\end{aligned}$};
+\draw (0,-4.5) node[minimum size=1.2cm,draw,text centered,text width=2.75cm] (f) { \footnotesize
+$p^* \geq d^*$ 
+$\textbf{KKT} \Longrightarrow p^* = d^*$
+};
+\draw[->] (a) -- (b);
+\draw[->] (a) -- (c);
+\draw[->] (b) -- (d);
+\draw[->] (c) -- (e);
+\draw[dashed] (e) -- (f);
+\draw[dashed] (d) -- (f);
+\end{tikzpicture}
+\end{figure}
+
+The primal problem and dual problem have the same objective, except that the order of the ``max'' and the ``min'' are exchanged.
+
+\subsection{KKT Conditions}
+The Karush-Kuhn-Tucker (KKT) theorem state a \textbf{necessary condition} that there must exist $(\bfx^*, \mu^*, \lambda^*)$ that is the solution for both primal problem and dual problem, and moreover $p^* = d^* = \cL(\bfx^*, \mu^*, \lambda^*)$. The KKT conditions are as follows,
+\begin{align}
+	\diff{x_i} \cL(\bfx^*, \mu^*, \lambda^*) &= 0, \quad i = [d] \\
+	\diff{\lambda_j} \cL(\bfx^*, \mu^*, \lambda^*) &= 0, \quad j = [n] \\
+	\mu^*_i g_i(\bfx^*) &= 0, \quad i = [m] \qquad (\text{``dual complementarity''}) \\
+	 g_i(\bfx^*) & \leq 0, \quad i = [m] \\
+	 \mu_i^* &\geq 0, \quad i = [m]
+\end{align}
+
+\section{Original SVM}
+\subsection{Hard-margin SVM}
+\begin{definition}[SVM - Primal Problem]
+Given a training dataset of $n$ points of the form $(\bfx_i, y_i), \ y_i = \{1, -1\}$, the SVM algorithm finds the optimal hyper-plan $\bfw^\top \bfx + w_0 = 0$ that separates the positive and negative points with the maximum margin. More formally,
+\begin{align}
+	\min_{\bfw, w_0} & \quad \onehalf \norm{\bfw}^2  \\
+	s.t. & \quad y_i (\bfw^\top \bfx_i + w_0) \geq 1, \quad i = [n]
+\end{align}
+\end{definition}
+\begin{definition}[SVM - Dual Problem]
+The Lagrangian dual problem of SVM is given by
+\begin{align}
+	\max_{\alpha} & \quad \sum_{i} \alpha_i - \onehalf \sum_{i,j} \alpha_i \alpha_j y_i y_j \langle \bfx_i, \bfx_j \rangle  \\
+	s.t. & \quad \alpha_i \geq 0,\ \sum_{i} \alpha_i y_i = 0
+\end{align}
+\end{definition}
+\begin{proof}
+	We show that how SVM's primal problem can be turned into its dual problem. We first construct the Lagrangian
+	\begin{equation}
+		\cL(\bfw, w_0; \alpha) = \onehalf \norm{\bfw}^2 - \sum_{i \leq n} \alpha_i [y_i(\bfw^\top \bfx + w_0) - 1].\label{eq:svm_lag}
+	\end{equation}
+	To get the dual problem $\theta_d(\alpha)$, we need to minimize the Lagrangian by setting its derivatives to $0$,
+	\begin{align}
+		\mathbf{0} = \nabla_\bfw \cL(\bfw, w_0; \alpha) = \bfw - \sum_{i \leq n} \alpha_i y_i \bfx_i \quad & \Longrightarrow\quad \bfw^* = \sum_{i \leq n} \alpha_i y_i \bfx_i, \\
+		{0} = \diff{w_0} \cL(\bfw, w_0; \alpha) = \sum_{i \leq n} \alpha_i y_i \quad & \Longrightarrow\quad  \sum_{i \leq n} \alpha_i y_i = 0.	
+	\end{align}
+	If we plug them back into Eg.~\ref{eq:svm_lag}, we have
+	\begin{equation}
+		\cL(\bfw^*, w_0^*; \alpha) = \sum_{i \leq n} \alpha_i - \onehalf \sum_{i, j} \alpha_i \alpha_j y_i y_j \bfx_i^\top \bfx_j - \underbrace{w_0 \sum_{i \leq n} \alpha_i y_i}_{=0},
+	\end{equation}
+	Then the dual problem is achieved as
+	\begin{align}
+	\max_{\alpha} & \quad \cL(\bfw^*, w_0^*; \alpha) = \sum_{i} \alpha_i - \onehalf \sum_{i,j} \alpha_i \alpha_j y_i y_j \langle \bfx_i, \bfx_j \rangle  \\
+	s.t. & \quad \alpha_i \geq 0,\ \sum_{i} \alpha_i y_i = 0
+\end{align}
+\end{proof}
+
+\remark The SVM can be more efficiently calculated in its dual form, because we can easily find the support vectors (whose $\alpha_i = 0$) and then derive the classification results directly by
+\begin{equation}
+	f(\bfx_*) = \bfw^\top \bfx_* + w_0 = w_0 + \sum_{\{i \mid \alpha_i > 0\}} \alpha_i y_i \langle \bfx_i, \bfx_* \rangle.
+\end{equation}
+It should be noticed that the hard-margin SVM requires both assumptions to work:
+\begin{itemize}
+	\item The data points are linearly separable;
+	\item There exists a separating hyperplane with non-zero margin.
+\end{itemize}
+
+\subsection{Soft-margin SVM}
+\begin{definition}[SoftSVM - Primal Problem]
+\begin{align}
+	\min_{\bfw, w_0} & \quad \onehalf \norm{\bfw}^2 + C \sum_{i \leq n} \xi_i \\
+	s.t. & \quad y_i (\bfw^\top \bfx_i + w_0) \geq 1 - \xi_i,\ \ \xi_i > 0
+\end{align}
+\end{definition}
+\begin{definition}[SoftSVM - Dual Problem]
+\begin{align}
+	\min_{\alpha} & \quad \onehalf \sum_{i} \alpha_i - \onehalf \sum_{i,j} \alpha_i \alpha_j y_i y_j \langle \bfx_i, \bfx_j \rangle \\
+	s.t. & \quad 0 \leq \alpha_i \leq C,\ \sum_{i} \alpha_i y_i = 0
+\end{align}
+\end{definition}
+\begin{proof}
+	Similar to hard-margin SVM, given $\alpha_i, \beta_i \geq 0$, we have
+	\begin{equation}
+		\cL(\bfw, w_0, \xi; \alpha) = \onehalf \norm{\bfw}^2 + C \sum_{i \leq n} \xi_i  - \sum_{i \leq n} \alpha_i [y_i(\bfw^\top \bfx + w_0) - 1 + \xi_i] - \sum_{i \leq n} \beta_i \xi_i.\label{eq:svm_lag2}
+	\end{equation}
+	Set its derivatives of Lagrangian to $0$:
+	\begin{align}
+		\mathbf{0} = \nabla_\bfw \cL(\bfw, w_0, \xi; \alpha) = \bfw - \sum_i \alpha_i y_i \bfx_i \quad & \Longrightarrow\quad \bfw^* = \sum_i \alpha_i y_i \bfx_i; \\
+		{0} = \diff{w_0} \cL(\bfw, w_0, \xi; \alpha) = \sum_i \alpha_i y_i \quad & \Longrightarrow\quad  \sum_i \alpha_i y_i = 0; \\
+		{0} = \diff{\xi_i} \cL(\bfw, w_0, \xi; \alpha) = C - \alpha_i + \beta_i \quad & \Longrightarrow\quad  \alpha_i = C - \beta_i \ \ (i = [n]).	
+	\end{align}
+	If we plug them back into Eg.~\ref{eq:svm_lag2}, we get
+	\begin{equation}
+		\cL(\bfw^*, w_0^*; \alpha) = \sum_i \alpha_i - \onehalf \sum_{i, j} \alpha_i \alpha_j y_i y_j \bfx_i^\top \bfx_j - \underbrace{w_0 \sum_i \alpha_i y_i}_{=0}, \where \alpha_i \leq C.
+	\end{equation}
+	Then we can obtain the dual problem.
+\end{proof}
+
+The optimal solution is given by
+\begin{align}
+	\bfw^* & = \sum_i \alpha_i^* y_i \bfx_i \\
+	\xi_i^* & = \max(0, 1 - y_i(\bfw^{* \top}\bfx_i + w_0^*))
+\end{align}
+
+\remark Here, $C$ is a trade-off hyper-parameter. Larger $C$ means narrower margin \& few neglected samples. When $C \rightarrow \infty$, then the solution is approaching to the solution from a hard-margin SVM.
+
+\begin{property}[Hinge Loss Form]
+The soft-margin SVM can be also achieved via hinge loss $\ell_{hinge}(\cdot\, , \cdot)$ as
+$$
+\min_{\bfw, w_0}\quad \sum_{i \leq n} \ell_{hinge}(\bfx_i, y_i) + \frac{1}{2C} \norm{\bfw}^2, \where \ell_{hinge}(\bfx_i, y_i) = \max\left\{0, 1 - y_i (\bfw^\top \bfx_i + w_0 ) \right\}
+$$
+\end{property}
+\remark Since hinge loss is convex and its derivative is known, we can solve the soft-margin SVM directly by gradient descent methods. Note that there is \textbf{no} such loss for hard-margin SVM, because no misclassifications, by definition, will occur in hard-margin SVM.
+
+
+\section{Extended SVM}
+
+\subsection{Multi-Class SVM}
+SVMs can be generalized to a multi-class scenario. The key idea is to maintain $c$ weight vectors $w^{(i)}$, one for each class.
+The prediction result is then
+\begin{equation}
+\hat{y} = \argmax_i \ \ {{w}^{(i) \top} {\bfx}}
+\end{equation}
+For each data point, it should hold that the prediction
+for the true class is separated by a margin from the
+class which has the second highest prediction, i.e.
+\begin{equation}
+w^{(y) \top} \bfx \geq
+\max_{i \neq y} \ \ {w^{(i) \top}\bfx} + 1
+\end{equation}
+Thus, the multi-class Hinge loss is given as
+\begin{equation*}
+\ell_{hinge}({w}^{(1)}, \cdots, {w}^{(c)}; {\bfx}, y)
+= \max{\{0, 1 +
+	\max_{j \neq y}\ 
+	{{w}^{(j) \top}{\bfx} - {w}^{(y) \top}{\bfx}}
+	\}}
+\end{equation*}
+
+
+\subsection{Structured SVM}
+Structured SVM generalizes the SVM, which maximizes the margin between the score of the correct class and the score of the highest-scoring incorrect runner-up class (a.k.a. the hard nagetives). 
+
+\begin{definition}[StructuredSVM - Primal Problem]
+\begin{align}
+	\min_{w, w_0, \xi} & \quad \onehalf \norm{\bfw}^2 + \frac{C}{n} \sum_{1 \leq i \leq n} \xi_i \\
+	s.t. & \quad \bfw^\top \Psi(\bfx_i, y_i) - \bfw^\top \Psi(x_i, y) \geq \Delta(y_i, y) - \xi_i,\quad  \xi_i > 0, \quad \forall i\leq n, y \neq y_i,
+\end{align}\marginpar{\footnotesize Replacing the margin $1$ with a general function $\Delta(y, y')$.}
+where $\Psi: \cX \times \cY \rightarrow \R^{d_1} \times \mathbb{Z}^{d - d_1}$ is a joint-feature map function. $\Delta(\cdot\, , \cdot): \cY \times \cY \rightarrow \R_+$ is function measuring the distance between two labels, which satisfies $\Delta(y, y) = 0$. $\Delta(\cdot\, , \cdot)$ defines the margin of each pair of samples.
+\end{definition}
+
+
+\begin{definition}[StructuredSVM - Dual Problem]
+To simplify the notation, let $\Psi_i(y):=\Psi(y_i, \bfx_i)-\Psi(y, \bfx_i)$ and $\Delta_i(y):=\Delta(y, y_i)$. Then, the dual problem is
+\begin{align}
+	\min_{\alpha} & \quad -\frac{1}{2}\norm{\sum_{i=1}^{n} \sum_{y_{j} \in \mathbb{K}_{i}} \alpha_{i j} \Psi_{i}\left(y_{j}\right)}^{2}+\sum_{i=1}^{n} \sum_{y_{j} \in {K}_{i}} \alpha_{i j} \Delta_{i}\left(y_{j}\right) \\
+	s.t. & \quad  0 \leq \sum_{y_{j} \in \mathbb{K}_{i}} \alpha_{i j} \leq C, \quad  \alpha_{i j} \geq 0.
+\end{align}
+Here, $\mathbb{K}_i = \cY \slash \{y_i\}$.
+\end{definition}
+\begin{proof}\marginpar{\footnotesize This is taken from the Ex.5-1.}
+	Let $\mathbb{K}_i = \cY \slash \{y_i\}$. The Lagrangian is
+	\begin{equation}
+		\mathcal{L}(\mathbf{w}, \xi, \alpha, \beta)=\frac{1}{2} \mathbf{w}^{\top} \mathbf{w}+C \sum_{i=1}^{n} \xi_{i}-\sum_{i=1}^{n} \sum_{y_{j} \in \mathbb{K}_{i}} \alpha_{i j}\left(\mathbf{w}^{\top} \Psi_{i}\left(y_{j}\right)-\Delta_{i}\left(y_{j}\right)+\xi_{i}\right)-\sum_{i=1}^{n} \beta_{i} \xi_{i}
+	\end{equation}
+	According to stationary conditions, we have
+	\begin{align}
+		0 & = \nabla_\bfw \cL = \bfw - \sum_{i = 1}^n  \sum_{y_{j} \in \mathbb{K}_{i}} \alpha_{i j} \Psi_i (y_j), \\
+		0 & = \diff{\xi_i} \cL = C - \sum_{y_{j} \in \mathbb{K}_{i}} \alpha_{i j} - \beta_i. \label{eq:ssvm}
+	\end{align}
+	Plug them into the Lagrangian, we get
+	\begin{align}
+		\cL(\alpha) = -\frac{1}{2}\norm{\sum_{i=1}^{n} \sum_{y_{j} \in \mathbb{K}_{i}} \alpha_{i j} \Psi_{i}\left(y_{j}\right)}^{2}+\sum_{i=1}^{n} \sum_{y_{j} \in \mathbb{K}_{i}} \alpha_{i j} \Delta_{i}\left(y_{j}\right)
+	\end{align}
+	Note that, Eq.~\ref{eq:ssvm} also implies $\sum_{y_{j} \in \mathbb{K}_{i}} \alpha_{i j} \leq C$. This concludes the proof.
+\end{proof}
+
+\noindent \remark In the dual form, constraints are separable in blocks which is favorable for optimization.
+
+\begin{property}[Similarity with CRF]
+The structured SVM can be written into the loss form as
+$$
+	\min \onehalf \norm{\bfw}^2 + \frac{C}{n} \sum_{1 \leq i \leq n}\left[ \max_{y \in \cY} \ \Delta(y_i, y) - \bfw^\top \Psi(\bfx_i, y_i) + \bfw^\top \Psi(x_i, y) \right]
+$$	
+The CRF can be formulated as
+$$
+	\min \frac{ \norm{\bfw}^2}{2\sigma^2} + \sum_{1 \leq i \leq n}\left[ \log \sum_{y \in \cY} \exp\left( \bfw^\top \Psi(\bfx_i, y_i) + \bfw^\top \Psi(x_i, y) \right) \right]
+$$
+\end{property}
+\remark  They both do regularized risk minimization and $\log \sum_y \exp(\cdot)$ can be interpreted as the \texttt{softmax} function.
+
+\begin{table}[hbtp]
+\center
+{\setstretch{1.3}
+\centering
+\caption{Summary of some unstructured and structured models}
+\begin{tabular}{l l l}
+\toprule
+\textbf{Training Criteria} & \textbf{Unstructured} & \textbf{Structured}	\\
+\midrule
+Max posterior's likelihood & Naive Bayes $p(\bfx \mid y)$ & Hidden Markov Model $p(\bfx \mid \bfy)$ \\
+Max conditional likelihood  & Logistic / NN $p(y \mid \bfx)$ & Conditional Random Field $p(\bfy \mid \bfx)$ \\
+Max margin & SVM $ \alpha^\top \phi(\bfx)$ & Structured SVM $ \alpha^\top \psi(\bfx, \bfy)$ \\
+\bottomrule
+\end{tabular}
+}\end{table}
+
+
+\newpage
+\chapter{Kernel Tricks}
+To handle the linear unseparable data, one common method is to use the ``Kernel Trick'' that maps the data into a new high-dimension space.
+%\section{Reproducing Kernel Hilbert Space (RKHS)}
+
+\section{Properties of Kernels}
+One of the fundamental mathematical results underlying learning theory with kernels is Mercer's theorem.
+\begin{definition}[Gram Matrix]
+	Let $\cX$ be a closed subset of $ \R^n\ (n \in \mathbb{N})$ and $S = \{ \bfx_1, \cdots, \bfx_n\} \subset \cX$. For any kernel function $K: \cX \times \cX \rightarrow \R$ and its corresponding feature map function $\phi(\bfx): \cX \rightarrow \cH$, the Gram matrix $\bfK$ on $S$ is defined as
+	$$
+	\bfK =\left[\begin{array}{ccc}
+K\left(\bfx_{1}, \bfx_{1}\right) & \cdots & K\left(\bfx_{1}, \bfx_{n}\right) \\
+\vdots & & \vdots \\
+K\left(\bfx_{n}, \bfx_{1}\right) & \cdots & K\left(\bfx_{n}, \bfx_{n}\right)
+\end{array}\right] = \left[\begin{array}{c}
+\phi\left(\bfx_{1}\right) \\
+\vdots \\
+\phi\left(\bfx_{n}\right)
+\end{array}\right] \left[\phi\left(\bfx_{1}\right), \cdots, \phi\left(\bfx_{n}\right)  \right],
+	$$
+	which must be positive semi-definite.
+\end{definition}
+
+\begin{theorem}[Mercer's Theorem]
+	Let $\cX$ be a closed subset of $ \R^n\ (n \in \mathbb{N})$, $\mu$ a Borel measure on $\cX$, and $K: \cX \times \cX \rightarrow \R$ a symmetric function, i.e., $K(\bfx, \bfy) = K(\bfy, \bfx)$. 
+	
+	\emph{1. Continuous version}. For any $f \in L^2(\cX, \mu)$, 
+	$$
+	\iint f(\bfx) K(\bfx, \bfy) f(\bfy) \dxx \dyy \geq 0 \ \Longleftrightarrow\ K(\bfx, \bfy)\text{ is a kernel function},
+	$$	
+	
+	\emph{2. Discrete version}. For any finite set of points $\{x_1, \cdots, x_N\} \subset \cX$ and $f: \cX \rightarrow \R$,
+	$$
+	\sum_{i, j \leq N} f(\bfx_i) K(\bfx_i, \bfx_j) f(\bfx_j) \geq 0 \ \Longleftrightarrow\  \bff^\top \bfK \bff \geq 0  \ \Longleftrightarrow\  \bfK \in \mathbf{SP_{+}} \text{ is a kernel matrix},
+	$$
+	where $\bff = [f(x_1), \cdots, f(x_N)]^\top$ and $\bfK$ is the Gram matrix.
+\end{theorem}
+\remark To become a kernel, the matrix $\bfK$ must be
+\begin{itemize}
+	\item square and symmetric;
+	\item semi-positive definite (can be judged via Sylvester's criterion).
+\end{itemize} 
+
+\begin{property}[Kernel Combinations]
+Let $K_1: \mathcal{X} \times \mathcal{X} \to \R$
+and $K_2: \mathcal{X} \times \mathcal{X} \to \R$
+be two kernel functions,
+$c > 0$ be a scalar,
+$f: \R \to \R$
+be either a polynomial with positive coefficients or the
+exponential function and
+$\mathcal{V} : \mathcal{Z} \to \mathcal{X}$ be a mapping.
+Then, the following combinations are also valid kernels:
+\begin{itemize}
+	\item $K(\bfx, \bfy) = K_1(\bfx, \bfy) + K_2(\bfx, \bfy)$
+	\item $K(\bfx, \bfy) = c \cdot K_1(\bfx, \bfy) \quad (c > 0)$
+	\item $K(\bfx, \bfy) = K_1(\bfx, \bfy) \cdot K_2(\bfx, \bfy)$
+	\item $K(\bfx, \bfy) = g(K_1(\bfx, \bfy))$ ($g$ is a positive-coef. polynomial  or the exponential function)
+	\item $K(\bfz, \bfz') = K_1(\mathcal{V}(\bfz), \mathcal{V}(\bfz'))$
+\end{itemize}
+\end{property} 
+\begin{proof} Here we just prove some of them and only consider the matrix form. 
+
+1. For any $\bff$,
+\begin{align}
+\bff^\top (\bfK_1 + \bfK_2)  \bff = \bff^\top \bfK_1  \bff + \bff^\top \bfK_2 \bff \geq 0.
+%	&\iint f(\bfx) \left(K_1(\bfx, \bfy) + K_2(\bfx, \bfy)\right) f(\bfy) \dxx\dyy \\
+%	= & \iint f(\bfx) K_1(\bfx, \bfy) f(\bfy) \dxx\dyy + \iint f(\bfx) K_2(\bfx, \bfy) f(\bfy) \dxx\dyy \geq 0.
+\end{align}
+
+2. For any $\bff$,
+\begin{align}
+\bff^\top (c \bfK_1)  \bff = c \ \bff^\top \bfK_1  \bff \geq 0.
+\end{align}
+
+3. Let $K_1(\bfx, \bfy) = \phi_1(\bfx)^\top \phi_1(\bfy), K_2(\bfx, \bfy) = \phi_2(\bfx)^\top \phi_2(\bfy)$,
+\begin{align}
+	K_1(\bfx, \bfy) K_2(\bfx, \bfy) & = \phi_1(\bfx)^\top \phi_1(\bfx) \phi_2(\bfx)^\top \phi_2(\bfx)\\
+	& = \sum_{m = 1}^M \phi_1^{(m)}(\bfx)\phi_1^{(m)}(\bfy) \sum_{n = 1}^N \phi_2^{(n)}(\bfx)\phi_2^{(n)}(\bfy) \\
+	& = \sum_{m = 1}^M \sum_{n = 1}^N \phi_1^{(m)}(\bfx)\phi_1^{(m)}(\bfy) \phi_2^{(n)}(\bfx)\phi_2^{(n)}(\bfy) \\
+	& = \sum_{k = 1}^{MN} \psi_k(\bfx)^\top \psi_k(\bfy) 
+\end{align}
+where $\psi_k(\bfx) = \mathrm{vec}(\phi_1(\bfx) \phi_2(\bfx)^\top)_k = \phi_1^{(\ceil{k - 1 / N})}(\bfx) \phi_1^{(k - 1 \% N)}(\bfx)$. \marginpar{\footnotesize here, $\ceil{\cdot}$ is for ceiling and \% is for remainder.}
+
+4. Can be proved using previous three conclusions.
+\end{proof}
+
+\begin{exercise}[Ex.4-3: Kernel Function] Assume we are given a probability density function $p(\bfx, h)$, where $\bfx \in  \cX$ and $h \in  \cH$ (finite sets). Consider a kernel $k((\bfx, h), (\bfx', h'))$ defined on pairs $(\bfx, h) \in  \cX \times H$. Prove that following function $k_m: \cX \times \cX \rightarrow \R$ defines a kernel.
+$$
+k_{m}(\mathbf{x}, \mathbf{y})=\sum_{h \in \mathcal{H}} \sum_{h^{\prime} \in \mathcal{H}} k\left((\mathbf{x}, h),\left(\mathbf{y}, h^{\prime}\right)\right) p(h \mid \mathbf{x}) p\left(h^{\prime} \mid \mathbf{y}\right)
+$$
+\end{exercise}
+\begin{sol}
+Let $k((\bfx, h), (\bfx', h')) = \phi(\bfx, h)^\top \phi(\bfx', h')$.
+\begin{align}
+	k_m(\bfx, \bfy) & = \sum_{h \in \cH} \sum_{h' \in \cH} \phi(\bfx, h)^\top \phi(\bfx', h') p(h \mid \mathbf{x}) p\left(h^{\prime} \mid \mathbf{y}\right) \\
+	& = \left[ \sum_{h \in \cH} p(h \mid \mathbf{x}) \phi(\bfx, h) \right]^\top \left[ \sum_{h' \in \cH} p(h' \mid \mathbf{y}) \phi(\bfy, h') \right]
+\end{align}
+This means $k_m(\bfx, \bfy)$ can be decomposed into $\psi(\bfx)^\top \psi(\bfy)$.
+\end{sol}
+
+
+\section{Useful Kernels}
+\subsection{Polynomial Kernel}
+\begin{definition}[Poly Kernel] Polynomial kernels of degree $d$ over $\bfx \in \R^N$ are defined as
+	$$
+	K(\bfx, \bfy) = (c + \bfx \cdot \bfy)^d.
+	$$
+\end{definition}
+A polynomial kernel can represent the inner product of two polynomial mappings $\phi(\bfx), \phi(\bfy): \R^N \rightarrow \R^d$ by
+	\marginpar{\footnotesize This mapping function $\phi(\bfx)$ is not unique, and may not be the smallest.}
+	\begin{equation}
+	\phi(\bfx)^\top \phi(\bfy) := K(\bfx, \bfy) = \sum_{i=0}^{d}{d \choose i} c^{d-i}\left(\mathbf{x} \cdot \mathbf{y}\right)^{i},\end{equation}
+where
+$$\phi(\bfx) = \left[\sqrt{c^d}, \sqrt{d c^{d - 1}} \bfx, \cdots,  \sqrt{{d \choose i}} \bfx^d \right]^\top, \quad \phi(\bfy) = \left[\sqrt{c^d}, \sqrt{d c^{d - 1}} \bfy, \cdots,  \sqrt{{d \choose i}} \bfy^d \right]^\top
+$$
+
+\begin{property}[Dimension of Feature Space]\footnote{See slides here: \url{https://cs.nyu.edu/~mohri/ml/ml10/sol3.pdf}} The smallest dimension of the feature space $\phi(\bfx)$ associated to the polynomial kernel $K(\bfx, \bfy): \R^N \times \R^N \rightarrow \R$ of degree $d$ is
+$$
+{N + d \choose d}.
+$$	
+\end{property}
+\begin{proof}
+The dimension of the feature space $\phi(\bfx)$ is thus the number of such monomials $f(N, d) \in \mathbb{Z}$, that is the number of ways of adding $N$ non-negative integers
+to obtain a sum of at most $d$. We have
+\begin{equation}
+	f(N, d) = \underbrace{f(N - 1, d)}_{N\text{ integers with sum of }d} + \underbrace{f(N, d - 1)}_{N\text{ integers with sum at most }d - 1}
+\end{equation}
+The result then follows by induction on $N + d$, using initial the conditions $f(1, 0) = f(0, 1) = 1$.
+\end{proof}
+\subsection{RBF Kernel}
+The Radial-basis Function (RBF) kernel, also called the Gaussian kernel or squared exponential kernel,
+is a popular kernel that is in the form of a radial basis function.
+\begin{definition}[RBF Kernel]
+With hyperparameter of scale $h$ and variance $\sigma^2$, the RBF kernel is defined as
+$$
+	k_{RBF}(\bfx, \bfy) = \sigma^2 \exp\left(-\frac{\norm{\bfx - \bfy}^2}{2 h^2} \right).
+$$
+\end{definition}
+The RBF kernel can project vectors into an infinite dimensional space, i.e. $\phi_{RBF}: \R^d \rightarrow \R^\infty$. Without loss of generality, after assuming $\sigma = 1, h = 1/4$, we have
+\begin{equation}
+	\exp \left(-\norm{\mathbf{x}-\mathbf{y}}^{2}\right)=\sum_{k=0}^{\infty} \underbrace{\left(\sqrt{\frac{1}{k !}} \exp \left(-\norm{\mathbf{x}}^{2}\right) \phi_{\text {poly }}(\mathbf{x})\right)}_{\text {row } k \text { in } \phi_{\mathrm{RBF}}(\mathbf{x})} \cdot \underbrace{\left(\sqrt{\frac{1}{k !}} \exp \left(-\norm{\mathbf{y}}^{2}\right) \phi_{\text {poly }}\left(\mathbf{y}\right)\right)}_{\text {row } k \text { in } \phi_{\mathrm{RBF}}\left(\mathbf{y}\right)}
+\end{equation}
+\begin{property}[RBF Kernel is Stationary]
+	RBF is a stationary kernel, since 
+	\begin{equation}
+		k_{RBF}(\bfx, \bfy) = k_{RBF}(\bfx + \Delta, \bfy + \Delta) = g(\bfy - \bfx).
+	\end{equation}
+\end{property}
+
+\subsection{Periodic Kernel}
+\begin{definition}
+	$$
+	k_{Per}(\bfx, \bfy) = \sigma^{2} \exp \left(-\frac{2 \sin ^{2}\left(\pi\left|\bfx-\bfy \right| / p\right)}{h^{2}}\right)
+	$$
+	Here, the period $p$ simply determines the distance between repetitions of the peaks, and the $h$ determines the length scale function in the same way as in the RBF kernel.
+\end{definition}
+\begin{property}[Periodic Kernel is Stationary]
+	Periodic is a stationary kernel, since 
+	\begin{equation}
+		k_{Per}(\bfx, \bfy) = k_{Per}(\bfx + \Delta, \bfy + \Delta) = g(\bfy - \bfx).
+	\end{equation}
+\end{property}

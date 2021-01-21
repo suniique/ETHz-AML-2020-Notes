@@ -1,0 +1,165 @@
+\begin{tcolorbox}
+\begin{tabular}{ll}
+	$(x, y)$ & a random example \\
+	$Z$ & a random training set \\
+	$Z_1, \cdots Z_M$ & bootstrap sets from $Z$ \\
+	$b$ & a base model trained on a bootstrap set \\
+	$b^{(M)}$ & an ensemble model trained via bagging on $M$ bootstrap sets
+\end{tabular}
+\end{tcolorbox}
+
+\section{Bagging}
+In bagging methods, each classifier trained on a different bootstrap sample of the
+training data, and the final predictions given by the majority voting.
+\begin{definition}[Bagging]
+Bagging = Bootstrap + Aggregation. For a training set $Z$,
+\begin{enumerate}
+	\item Draw $M$ bootstrap datasets, $Z_1, \cdots Z_M$, where $Z_i \subset Z$;
+	\item Train $M$ base models, $b^{(1)}, \cdots, b^{(M)}$, independently;
+	\item Aggregate base models with
+	$$
+	\hat{b}(\bfx) = \left\{ \begin{array}{ll} \displaystyle \frac{1}{M}\sum_{t \leq M} b^{(t)}(\bfx) & \mathrm{regression} \\ \displaystyle \mathrm{vote}\left\{ b^{(1)}, \cdots, b^{(M)} \right\} & \mathrm{classification}   \end{array} \right.
+	$$
+\end{enumerate}
+\end{definition}
+\begin{theorem}[Variance Reducing]
+	For $\bfx \in X$, if $range(y) := \max y - \min y < \infty$, then there is a sufficiently large $M$ s.t.
+	\begin{align}
+		\E{Z, Z'_1,\cdots ,Z'_M, y \mid \bfx}{(y - b^{(M)}(\bfx))^2} \leq \E{Z, Z', y \mid \bfx}{(y - b(\bfx))^2}
+	\end{align}
+\end{theorem}
+\textit{Proof Sketch.} \marginpar{\footnotesize See lecture slide 9.}
+\begin{align}
+	\E{Z, Z', y \mid \bfx}{(y - {b}(\bfx))^2} & = \E{Z, Z', y \mid \bfx}{(y - \E{Z,Z'}{b(\bfx)} + \E{Z,Z'}{b(\bfx)} - b(\bfx))^2} \\
+	& = \E{Z, Z', y\mid \bfx}{(y - \E{Z, Z'}{b(\bfx)})^2} + \underbrace{\E{Z, Z'}{(\E{Z, Z'}{b(\bfx)} - b(\bfx)^2}}_{Var[b(\bfx)] \geq 0} \\
+	& \geq \E{Z, Z'_1,\cdots ,Z'_M, y\mid \bfx}{(y - \E{Z, Z'}{\hat{b}(\bfx)})^2}
+\end{align} \myqed
+
+\remark The main differences between bagging and boosting:
+\begin{itemize}
+	\item Bagging builds learners independently, while boosting tries to add new models that do well where previous models fail.
+	\item Bagging uniformly samples data, while boosting samples data based on weights.
+	\item Bagging uses majority voting, while boosting uses weighted voting (more weight to those with better performance on training data).
+	\item Boosting tries to reduce both bias and variance; while bagging only solve the over-fitting problem (high variance).
+\end{itemize}
+
+\section{Boosting}
+\subsection{AdaBoost}
+\begin{itemize}
+	\item AdaBoost = Adaptive Boosting
+	\item Sequentially add \textit{week} predictors to the ensemble, where each new predictor \textbf{improves} its predecessor by paying more attention to the hard cases.
+	\item Final prediction is made via a weighted majority voting scheme.
+\end{itemize}
+
+Given the training samples $\{(\bfx_1, y_1), \cdots , (\bfx_n, y_n)\} \in \cX \times \{-1, +1 \} $, and the base model $b(\bfx): \cX \rightarrow \{-1, +1 \}$, the AdaBoost algorithm is shown in Alg.~\ref{alg:adaboost}.
+
+\begin{algorithm}[H]
+\setstretch{1.35}
+\caption{AdaBoost method (from Slides 6 \& Toturial 8) \label{alg:adaboost}}
+\SetAlgoLined
+ $w_i^{(t)} = 1/n$ \textbf{for} $i=1,\cdots,n$\;
+ \For{$t = 1, \cdots, M$}{
+  $b_t(\bfx) = \displaystyle \argmin_{b} \sum_{i\leq n} w_i^{(t)} \Ind{y_i \neq b(\bfx_i)} $\;
+  $\epsilon_t = \displaystyle \left(\sum_{i \leq n} w_i^{(t)} \Ind{y_i \neq b_t(x_i)}\right) \bigg/ \left(\sum_{i \leq n} w_i^{(t)}\right) $\Comment*[r]{weighted error rate}
+  $\alpha_t = \displaystyle  \log{\frac{\textstyle 1-\epsilon_t}{\textstyle \epsilon_t}}$\Comment*[r]{correct and wrong samples both get half of the weights}
+  $w_i^{(t+1)} = w_i^{(t)} \exp\left( \alpha_t \Ind{y_i \neq b_t(\bfx_i)} \right) $\;
+ }
+\KwOut{ $\widehat{b}(x) = \displaystyle \sign\left(\sum_{t \leq M} \alpha_t b_t(\bfx) \right)$, $\forall \bfx \in \cX$
+}
+\end{algorithm}
+Note that there is another version of AdaBoost typically found in literatures. The difference lies in how to handle correct samples. In the previous version, correct samples will have unchanged weights; whereas in the second version, they will have weights of $\exp(-\alpha_t)$.
+
+\begin{algorithm}[H]
+\setstretch{1.35}
+\caption{AdaBoost method (another version) \label{alg:adaboost2}}
+\SetAlgoLined
+ $w_i^{(t)} = 1/n$ \textbf{for} $i=1,\cdots,n$\;
+ \For{$t = 1, \cdots, M$}{
+  $b_t(\bfx) = \displaystyle \argmin_{b} \sum_{i\leq n} w_i^{(t)} \Ind{y_i \neq b(\bfx_i)} $\;
+  $\epsilon_t = \displaystyle \sum_{i \leq n} w_i^{(t)} \Ind{y_i \neq b_t(x_i)} $\Comment*[r]{weighted error rate}
+  $\alpha_t = \displaystyle  \onehalf \log{\frac{\textstyle 1-\epsilon_t}{\textstyle \epsilon_t}}$\Comment*[r]{note the additional $1/2$}
+  $Z_t = 2 \sqrt{\epsilon_t (1 - \epsilon_t)}$\Comment*[r]{normalizer}
+  $w_i^{(t+1)} = w_i^{(t)} \exp\left( -\alpha_t y_i b_t(\bfx_i) \right) /\, Z_t$\;
+ }
+\KwOut{ $\widehat{b}(x) = \displaystyle \sign\left(\sum_{t \leq M} \alpha_t b_t(\bfx) \right)$, $\forall \bfx \in \cX$
+}
+\end{algorithm}
+\remark Here we only consider binary classification problem, where the base models are assumed to have accuracy higher than 50\%. Thus, Line 5 will not decrease the weight of mis-classified samples.
+
+\begin{theorem}[Empirical Error of AdaBoost]The empirical error of the classifier returned by AdaBoost verifies
+$$
+\widehat{\mathrm{Err}}(b) \leq \exp\left[ -2 \sum_{t \leq M}(\onehalf - \epsilon_t)^2 \right].
+$$
+\end{theorem}
+\begin{proof}
+\begin{equation}
+		\widehat{\mathrm{Err}}(b)=\frac{1}{n} \sum_{i=1}^{n} \Ind{y_{i} \neq b(\bfx_{i})} \leq \frac{1}{n} \sum_{i=1}^{n} e^{-y_{i} b(\bfx_{i})}=\frac{1}{n} \sum_{i=1}^{n}\left[n \prod_{t=1}^{M} Z_{t}\right] w^{(M+1)}_{i}=\prod_{t=1}^{M} Z_{t}.
+\end{equation}
+
+\end{proof}
+
+\subsection{Gradient Boosting}
+Gradient Boosting is yet another popular and efficient approach. It uses gradients (or residuals) instead of sample weights. The final predictions are made from weighted sum of weak models. It works for arbitrary differentiable loss functions $L(y, f(\bfx))$.
+
+\begin{algorithm}[H]
+\setstretch{1.35}
+\caption{Gradient Boosting \label{alg:gb}}
+\SetAlgoLined
+ \For{$t = 1, \cdots, M$}{
+  Compute gradient: $g_t(\bfx_i) = \displaystyle - \left[ \frac{\partial L(y_i; f(\bfx_i))}{\partial f(\bfx_i)} \right]_{f = \widehat{f}_{t - 1}} \;
+  \forall i \leq n $\;
+  Fit weak learner to the gradients: $\displaystyle h_t = \argmin_h \sum_{i\leq n}(-g_t(\bfx_i) - h(\bfx_i))^2$\;
+  Fit the step length via line search: $\displaystyle \beta_t = \argmin_\beta \sum_{i \leq n} L(y_i,  \widehat{f}_{t - 1}(\bfx_i) + \beta h_t(\bfx_i)) $\;
+  Update $ \widehat{f}_{t}(\bfx) =  \widehat{f}_{t - 1}(\bfx) + \beta_t h_t(\bfx)$\;
+ }
+\KwOut{ $\widehat{f}_{M}(\bfx)$
+}
+\end{algorithm}
+
+%\subsection{From the stage-wise perspective (Exercise 6)}
+%\begin{algorithm}[H]
+%\setstretch{1.3}
+% \caption{Stage-wise AdaBoost}
+%\SetAlgoLined
+% $w_i^{(t)} = 1/n$ \textbf{for} $i=1,\cdots,n$\;
+% \For{$t = 1, \cdots, M$}{
+%  $f_t(x) = \argmin_{b} \sum_{i\leq n} w_i^{(t)} \Ind{y_i \neq b(x_i)} $\;
+%  $\epsilon_t = \sum_{i \leq n} w_i^{(t)} \Ind{y_i \neq f_t(x_i)} \ \slash \sum_{i \leq n} w_i^{(t)} $\;
+%  $\alpha_t = \log{\frac{\textstyle 1-\epsilon_t}{\textstyle \epsilon_t}}$\;
+%  $w_i^{(t+1)} = w_i^{(t)} \exp\left( \alpha_t \Ind{y_i \neq f_t(x_i)} \right) $\;
+% }
+%\KwOut{ $\hat{c}(x) = \sign\left(\sum_{t \leq M} \alpha_t f_t(x) \right)$, $\forall x \in \R^D$
+%}
+%\end{algorithm}
+
+\subsection{Theoretical Insights}
+\subsubsection{Forward Stage-wise Additive Estimator with the Exponential Loss}
+Let $L(y, y') = \exp(-y y')$ be an exponential loss, then AdaBoost can be translated into the following form.
+
+\begin{algorithm}[h]
+\setstretch{1.35}
+\caption{AdaBoost (FSAE explanation) \label{alg:fsae}}
+\SetAlgoLined
+$f_0(\bfx) = 0$, for all $\bfx \in \R^D$\;
+ \For{$t = 1, \cdots, M$}{
+ 	$\displaystyle (\alpha_t, b^{(t)}) = \argmin_{\alpha, b} \sum_{i = 1}^n L(y_i, \alpha b(\bfx_i), + f_{t-1}(\bfx_i))$\;
+ 	$f_t(\bfx) = \alpha_t  b^{(t)}(\bfx_i) + f_{t-1}(\bfx_i)) $for all $\bfx \in \R^D$\;
+ }
+\KwOut{ $\widehat{f}_{M}(\bfx)$
+}
+\end{algorithm}
+
+The proof of the equivalence can be found in Ex.6 - 1.
+
+
+\subsubsection{AdaBoost trains max-margin classifiers}
+
+	\begin{align}
+	b^{(M)}(\bfx) = \sign\left(\sum_{t \leq M} \alpha_t b^{(t)}(\bfx) \right) \qquad w.l.o.g.\ \sum_{t \leq M} \alpha_t = 1
+\end{align}
+
+\begin{align}
+	margin(\bfx_i) := y_i \sum_{t \leq M}  \alpha_t b^{(t)}(\bfx_i) \longrightarrow 0 \quad ({M \rightarrow \infty})
+\end{align}
+
+

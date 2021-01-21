@@ -1,0 +1,114 @@
+\section{Matrix Algebra}
+\subsection{Derivatives}
+{\centering
+\setstretch{1.3}
+\begin{tabular}{p{7cm}p{7cm}}
+\multicolumn{2}{c}{For $f(\bfx): \R^{n} \rightarrow \R$, $f'(\bfx) \in \R^n$ } \\  \midrule
+$\diff{\bfx}(\bfb^\top \bfx) = \diff{\bfx}(\bfx^\top \bfb) = \bfb $ & $\diff{\bfx}(\bfx^\top \bfx) = 2 \bfx$ \\
+$\diff{\bfx}(\norm{\bfA \bfx - \bfb}_2) = \frac{\bfA^\top (\bfA\bfx - \bfb)}{\norm{\bfA\bfx - \bfb}_2}$ & $\diff{\bfx}(\norm{\bfA \bfx - \bfb}_2^2) = {2\bfA^\top (\bfA\bfx - \bfb)}$ \\
+\\
+\multicolumn{2}{c}{For $f(\bfX): \R^{n \times m} \rightarrow \R$, $f'(\bfX) \in \R^{n \times m}$} \\
+\midrule
+$\diff{\bfX}(\bfa^\top \bfX \bfb) = \bfa \bfb^\top $ & $\diff{\bfX}(\bfa^\top \bfX^\top \bfb) = \bfb \bfa^\top $ \\
+$\diff{\bfX}\mathrm{Tr}(\bfA^\top \bfX \bfB) = \bfA \bfB^\top $ & $\diff{\bfX}\mathrm{Tr}(\bfA^\top \bfX^\top \bfB) = \bfB \bfA^\top $ \\
+$\diff{\bfX} |\bfX| = |\bfX| (\bfX^{-1})^\top$
+\end{tabular}
+}
+\subsection{Inverses}
+\subsubsection{Moore-Penrose Inverse}
+Moore-Penrose pseudo-inverse of $\bfA \in \R^{n \times m}$ (assuming $\bfA$ has a SVD as $\bfA = \bfV \bfD \bfU^\top$):
+\begin{equation}
+	\bfA^+ = \left\{ (\bfA^\top \bfA)^{-1}\bfA^\top \text{ or } \bfA^\top (\bfA \bfA^\top)^{-1} \right\}= \bfV \bfD^+ \bfU^\top \in \R^{m \times n}
+\end{equation}
+where $ \bfD = \mathrm{diag}(\sigma_1, \cdots, \sigma_r), \bfD^+ = \mathrm{diag}(\sigma_1^{-1}, \cdots, \sigma_r^{-1}) \in \R^{r \times r}$ and $r = \mathrm{rank}(\bfA)$.
+
+\subsubsection{Identities}
+Sherman-Morrison Lemma:
+\begin{equation}
+\left(\mathbf{A}+\mathbf{b c}^{\top}\right)^{-1}=\mathbf{A}^{-1}-\frac{\mathbf{A}^{-1} \mathbf{b} \mathbf{c}^{\top} \mathbf{A}^{-1}}{1+\mathbf{c}^{\top} \mathbf{A}^{-1} \mathbf{b}}
+\end{equation}
+Woodbury Identity (and its variations):
+\begin{align}
+(\mathbf{A}+\mathbf{B C})^{-1} & =\mathbf{A}^{-1}-\mathbf{A}^{-1} \mathbf{B}\left(\mathbf{I}+\mathbf{C A}^{-1} \mathbf{B}\right)^{-1} \mathbf{C A}^{-1} \\
+\left(\bfA+\bfU \bfC \bfV\right)^{-1} & =\bfA^{-1}-\bfA^{-1}\bfU\left(\bfC^{-1}+\bfV \bfA^{-1} \bfU\right)^{-1}\bfV \bfA^{-1}
+\end{align}
+\subsection{Positive-definite Matrices}
+For a symmetric matrix $\bfA \in \R^{n \times n}$, 
+\begin{equation}
+	\bfA \mathrm{\ is\ PD}\ \Longleftrightarrow\ \bfx^\top \bfA \bfx > 0\ (\bfx \neq 0)\ \Longleftrightarrow\ \mathrm{eig}(\bfA) > 0\ \Longleftrightarrow \ \bfA = \bfB^\top \bfB \ \Longleftrightarrow \ \mathrm{ Sylvester's}.
+\end{equation}
+Here, \textit{Sylvester's\ criterion} is to say that all leading principal minors of $\bfA$ must be positive.
+
+\section{Statistics and Probability}
+\begin{property}[Probability Three Axioms]
+\ 
+\begin{enumerate}
+	\item Normalization:  $p(\Omega) = 1$;
+ 	\item Non-negativity: $p(A) \geq 0 \ \mathrm{ for\ all }\ A \in \mathcal{F}$;
+	\item $\sigma$-Additivity: $ \displaystyle \forall A_{1}, \ldots A_{n}, \ldots \in \mathcal{F} \ \mathrm{disjoint}: p\left(\bigcup_{i=1}^{\infty} A_{i}\right)=\sum_{i=1}^{\infty} p\left(A_{i}\right)$
+\end{enumerate}
+	\end{property}
+
+\begin{definition}[Conditional Probability]
+	\begin{equation}
+p(a \mid b)=\frac{p(a \wedge b)}{p(b)}, \ \mathrm{if}\ p(b) \neq 0
+\end{equation}
+\end{definition}
+\begin{property}[Joint Distributions]
+\ \marginnote{\footnotesize Note that $x_{1:n} = x_1, x_2, \cdots, x_n$}[0cm]
+\begin{enumerate}
+	\item Sum Rule (a.k.a Marginalization) \begin{equation}
+p\left(X_{i}\right)=\sum_{x_{1}, \ldots, x_{i-1}, x_{i+1}, \ldots, x_{n}} p\left(x_{1}, \ldots, x_{i-1}, X_{i}, x_{i+1}, \ldots, x_{n}\right)
+\end{equation}
+	\item Chain Rule \begin{equation}
+p\left(X_{1}, \ldots, X_{n}\right)=p\left(X_{1}\right) p\left(X_{2} \mid X_{1}\right) \ldots p\left(X_{n} \mid X_{1}, \ldots, X_{n-1}\right)
+\end{equation}
+\end{enumerate}
+\end{property}
+
+\begin{definition}[Bayes' Rule]
+\begin{equation}
+		p(X \mid Y)=\frac{p(X)\ p(Y \mid X)}{p(Y)}, \quad 
+		\mathrm{`` posterior''}=\frac{\mathrm{`` prior''} \times \mathrm{``likelihood''}}{\mathrm{`` evidence''}}
+\end{equation}
+\end{definition}
+
+\subsection{Expectation \& Variance}
+For random variables:
+\begin{align}
+	\EE[\alpha X + c] & = \alpha\, \EE[ X ] + c \\
+	\mathrm{Var}[\alpha X] & = \alpha^2 \mathrm{Var}[X]\\
+	\mathrm{Cov}[\alpha X, Y] & = \alpha^2 \mathrm{Cov}[X, Y]\\
+	\mathrm{Cov}[X_1 + X_2, Y] & = \mathrm{Cov}[X_1, Y] + \mathrm{Cov}[X_2, Y]
+\end{align}
+Linear forms:
+\begin{align}
+	\EE[\bfA \bfX \bfB + \bfC] & = \bfA\, \EE[ \bfX ]\, \bfB + \bfC \\
+	\mathrm{Var}[\bfA \bfx] & = \bfA \mathrm{Var}[\bfx] \bfA^\top \\
+	\mathrm{Cov}[\bfA \bfx, \bfB \bfy] & = \bfA \mathrm{Cov}[\bfx, \bfy] \bfB^\top
+\end{align}
+Quadratic forms: let $\bfmu = \EE[\bfx], \Sigma = \mathrm{Var}[\bfx]$.
+\begin{align}
+	\EE[\bfx^\top \bfx] & = \mathrm{Tr}(\Sigma) + \bfmu^\top \bfmu & \EE[\bfx \bfx^\top] & = \Sigma + \bfmu \bfmu^\top  \\
+	\EE[\bfx^\top \bfA \bfx] & = \mathrm{Tr}(\bfA \Sigma) + \bfmu^\top \bfA \bfmu
+\end{align}
+
+\subsection{Gaussian Distribution}
+The density of $\bfx \sim \mathcal{N}(\bfmu, \Sigma)$ is 
+\begin{equation}
+p(\mathbf{x})=\frac{1}{\sqrt{\operatorname{det}(2 \pi {\Sigma})}} \exp \left[-\frac{1}{2}(\mathbf{x}-\bfmu)^{T} {\Sigma}^{-1}(\mathbf{x}-\bfmu)\right].
+\end{equation}
+Linear combination of two Gaussians $\bfx_1 \sim \mathcal{N}(\bfmu_1, \Sigma_1), \bfx_2 \sim \mathcal{N}(\bfmu_2, \Sigma_2)$:
+\begin{equation}
+	\bfA \bfx_1 + \bfB \bfx_2 + c \sim \mathcal{N}\left(\bfA \bfmu_1 + \bfB \bfmu_2, \bfA\Sigma_1\bfA^\top + \bfB\Sigma_2\bfB^\top\right).
+\end{equation}
+The products of two Gaussian densities
+\begin{align}
+	\mathcal{N}\left(\bfx; \bfmu_1, \Sigma_1\right) \cdot & \,\mathcal{N}\left(\bfx; \bfmu_2, \Sigma_2\right) \propto \mathcal{N}\left(\bfx; \bfmu', \Sigma'\right), \where \\
+	\Sigma' & = (\Sigma_1^{-1} + \Sigma_2^{-1})^{-1} \\
+	\bfmu' & = \Sigma' (\Sigma_1^{-1} \bfmu_1 + \Sigma_2^{-1} \bfmu_2)
+\end{align}
+Rearranging quadratic form into squared form: (assume $\bfA$ is symmetric)
+\begin{equation}
+	-\onehalf \bfx^\top \bfA \bfx + \bfb^\top \bfx = -\onehalf (\bfx - \bfA^{-1} \bfb) ^\top \bfA (\bfx - \bfA^{-1}\bfb) + \onehalf \bfb^\top \bfA^{-1} \bfb.
+\end{equation}

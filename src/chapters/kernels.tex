@@ -1,0 +1,278 @@
+\chapter{Kernels}
+\todo{Fix this chapter}
+
+\section{Kernels}
+To find non-linear classification boundaries in linear
+classifiers, non-linear transformations of the feature vectors
+followed by linear classification can be used.
+In the case of, for example, polynomials however,
+$\mathcal{O}(d^k)$ dimensions are required to represent
+polynomials of degree $k$ on $d$ features.
+Kernels allow to implicitly use such a representation
+without the computational cost by implicitly calculating
+inner products in high-dimensional spaces.
+
+The fundamental insight is that the optimal hyperplane
+lives in the span of the data, i.e.
+\begin{equation*}
+\hat{\vec{w}} = \sum_{i=1}^n{\alpha_i y_i \vec{x}_i}
+\end{equation*}
+This follows from the Representer Theorem.
+Handwavily, starting gradient descent from $\vec{0}$
+constructs and maintains such a representation.
+
+The general Ansatz is to write
+\begin{equation*}
+\vec{w} = \sum_{i=1}^n{y_i \alpha_i \vec{x}_i}
+\end{equation*}
+and recalculating the optimisation problems.
+From that follows that the objective only depends
+on inner products $\vec{x}_i^T \vec{x}_j$.
+
+A kernel $k$ is a function which computes
+\begin{equation*}
+k(\vec{x}, \vec{x}') :=
+\phi(\vec{x})^T \phi(\vec{x}')
+\end{equation*}
+Usually, $k$ can be computed much more efficiently than
+$\phi(\vec{x})^T \phi(\vec{x'})$.
+
+The \emph{kernel trick} is expressing a problem such that
+it depends only on inner products and then replacing the
+inner products by kernels:
+\begin{equation*}
+\vec{x}_i^T \vec{x}_j \Rightarrow k(\vec{x}_i, \vec{x}_j)
+\end{equation*}
+
+
+\subsection{Properties of Kernels}
+Let $\mathcal{X}$ be a data space.
+
+A kernel is a function
+$k : \mathcal{X} \times \mathcal{X} \to \R$
+corresponding to some inner product
+$k(\vec{x}, \vec{x}') = \langle \phi(\vec{x}), \phi(\vec{x}') \rangle$
+in some suitable space,
+satisfying
+\begin{enumerate}
+	\item Symmetry:
+	$\forall \vec{x}, \vec{x}': k(\vec{x}, \vec{x}') = k(\vec{x}', \vec{x})$
+	\item Positive semi-definiteness:
+	For any $n$ and any set $S = \{\vec{x}_1, \dotsc, \vec{x}_n\} \subseteq \mathcal{X}$,
+	the kernel (Gram) matrix $\vec{K}$ must be positive
+	semi-definite.
+\end{enumerate}
+
+Only positive semi-definiteness (instead of positive definiteness)
+is required due to the fact that the concatenation of
+functions $\langle \cdot, \cdot \rangle \circ \phi(\cdot)$
+is calculated and $\phi$ could be non-injective,
+e.g. $\phi(\vec{x}) = 0$.
+
+Alternatively, a symmetric function $k : \mathcal{X} \to \mathcal{X}$
+is positive semi-definite if
+$\forall n > 0$,
+$\forall (a_1, \dotsc, a_n) \in \R^n$,
+$\forall (x_1, \dotsc, x_n) \in \mathcal{X}^n$,
+\begin{equation*}
+\sum_{i=1}^n{
+	\sum_{j=1}^n{
+		a_i a_j k(x_i, x_j)
+	}
+}
+\geq 0
+\end{equation*}
+
+A symmetric matrix $\vec{M} \in \R^{n \times n}$
+is positive semi-definite
+\begin{equation*}
+\Leftrightarrow \forall \vec{x} \in \R^n:
+\vec{x}^T \vec{M} \vec{x} \geq 0
+\Leftrightarrow
+\text{All Eigenvalues of $\vec{M}$ are} \geq 0
+\end{equation*}
+
+Let $k : \mathcal{X} \times \mathcal{X} \to \R$
+be a kernel and $S = \{\vec{x}_1, \dotsc, \vec{x}_n\} \subseteq \mathcal{X}$
+be a finite data subset.
+Then, the \emph{kernel (Gram) matrix} is
+\begin{equation*}
+\vec{K} =
+\begin{pmatrix}
+k(\vec{x}_1, \vec{x}_1) & \dots & k(\vec{x}_1, \vec{x}_n) \\
+\vdots & & \vdots \\
+k(\vec{x}_n, \vec{x}_1) & \dots & k(\vec{x}_n, \vec{x}_n)
+\end{pmatrix}
+= \vec{\phi}^T \vec{\phi}
+\end{equation*}
+where
+\begin{equation*}
+\vec{\phi} =
+\left(
+\begin{array}{c|c|c}
+\phi(\vec{x}_1) & \dots & \phi(\vec{x}_n)
+\end{array}
+\right)
+\end{equation*}
+
+The kernel (gram) matrix is positive semi-definite.
+
+Conversely, from every symmetric positive semi-definite
+matrix $\vec{K} \in \R^{n \times n}$,
+we can construct a feature map
+$\phi : \mathcal{X} \to \R^n$ such that
+$\vec{K}_{i,j} = \phi(i)^T \phi(j)$:
+\begin{equation*}
+\vec{K} = \vec{U}\vec{D}\vec{U}^T
+= \underbrace{\vec{U} \vec{D}^{\frac{1}{2}}}_{\vec{\phi}^T}
+\underbrace{\vec{D}^{\frac{1}{2}^T} \vec{U}^T}_{\vec{\phi}}
+=
+\left(
+\begin{array}{c|c|c}
+\phi(1) & \dots & \phi(n)
+\end{array}
+\right)^T
+\left(
+\begin{array}{c|c|c}
+\phi(1) & \dots & \phi(n)
+\end{array}
+\right)
+\end{equation*}
+
+\begin{theorem}[Mercer's Theorem]
+	Let $\mathcal{X}$ be a compact subset of
+	$\R^d$ and
+	$k : \mathcal{X} \times \mathcal{X} \to \R$
+	a kernel function.
+	
+	Then, $k$ can be expanded in a uniformly convergent
+	series of bounded functions $\phi_i$ so that
+	\begin{equation*}
+	k(\vec{x}, \vec{x}') =
+	\sum_{i=1}^{\infty}{
+		\lambda_i \phi_i(\vec{x}) \phi_i(\vec{x}')
+	}
+	\end{equation*}
+\end{theorem}
+
+
+\subsection{Common Kernels}
+The Gaussian and Laplacian kernels compute an inner product
+in an infinite data space.
+In the following, $\mathcal{X}$ is the data space,
+$\mathcal{H}$ the inner product space
+(with $\langle \cdot , \cdot \rangle_\mathcal{H}$)
+and $\phi(\cdot)$ the feature map.
+
+\subsubsection{Linear Kernel}
+\begin{equation*}
+k(\vec{x}, \vec{x}') = \vec{x}^T \vec{x}'
+\end{equation*}
+$\mathcal{X} = \R^n$,
+$\mathcal{H} = \R^n$,
+$\phi(\vec{x}) = \vec{x}$.
+
+\subsubsection{Monomials of Degree $m$}
+\begin{equation*}
+k(\vec{x}, \vec{x}') = (\vec{x}^T \vec{x}')^m
+\end{equation*}
+
+Direct calculation is of order $\mathcal{O}(d^m)$
+while the kernel is of order $\mathcal{O}(d)$.
+
+\subsubsection{Monomials of Degree up to $m$}
+\begin{equation*}
+k(\vec{x}, \vec{x}') = (1 + \vec{x}^T \vec{x}')^m
+\end{equation*}
+$\mathcal{X} = \R^n$,
+$\mathcal{H} = \R^{\binom{n+m}{m}}$.
+
+The number of monomials up to degree $m$ is
+$\mathcal{O}(\binom{d+m}{m})$.
+
+\subsubsection{Gaussian/RBF/Squared Exponential Kernel}
+\begin{equation*}
+k(\vec{x}, \vec{x}') = \exp\left(
+-\frac{\norm{\vec{x} - \vec{x}'}_2^2}{h^2}
+\right)
+\end{equation*}
+$\mathcal{X} = \R^n$,
+$\mathcal{H} = \R^\infty$.
+
+$h$ is the bandwitdh/lengthscale parameter.
+The smaller $h$, the more influence do samples have.
+Bigger $h$ lead to smoother functions.
+If the bandwith is increased,
+it starts to behave like a linear kernel.
+
+\subsubsection{Laplacian Kernel}
+\begin{equation*}
+k(\vec{x}, \vec{x}') = \exp\left(
+-\frac{\norm{\vec{x} - \vec{x}'}_1}{h}
+\right)
+\end{equation*}
+$h$ is the bandwitdh/lengthscale parameter.
+The smaller $h$, the more influence do samples have.
+Bigger $h$ lead to smoother functions.
+The Laplacian kernel decision boundary behaves
+sort of piecewise linear.
+
+
+\subsubsection{Matrix Kernel}
+\begin{equation*}
+k(\vec{x}, \vec{x}') = \vec{x}^T \vec{M} \vec{x}
+\end{equation*}
+is a kernel if and only if $\vec{M}$ is
+symmetric, positive semi-definite.
+
+\subsubsection{ANOVA Kernel}
+\begin{equation*}
+k(\vec{x}, \vec{x}') = 
+\sum_{j=1}^d{
+	k_j(x_j, x_j')
+}
+\end{equation*}
+where $x \in \R^d$,
+$k : \R^d \times \R^d \to \R$ and
+$k_j : \R \times \R \to \R$
+are valid kernels.
+
+\subsubsection{Semi-Parametric Regression Kernel}
+Often, parametric models are too rigid and non-parametric
+models fail to interpolate.
+Thus, an additive combination of linear and non-linear
+kernels can be used:
+\begin{equation*}
+k(\vec{x}, \vec{x}') =
+c_1 \exp\left(
+-\frac{\norm{\vec{x} - \vec{x}'}_2^2}{h^2}
+\right) +
+c_2 \vec{x}^T \vec{x}'
+\end{equation*}
+
+
+\subsection{Kernel Engineering}
+Let $k_1 : \mathcal{X} \times \mathcal{X} \to \R$
+and $k_2 : \mathcal{X} \times \mathcal{X} \to \R$
+be two kernels,
+$c > 0$ be a scalar,
+$f : \R \to \R$
+be either a polynomial with positive coefficients or the
+exponential function and
+$\mathcal{V} : \mathcal{Z} \to \mathcal{X}$ be a mapping.
+
+Then, the following are also valid kernels:
+\begin{itemize}
+	\item $k(\vec{x}, \vec{x}') = k_1(\vec{x}, \vec{x}') + k_2(\vec{x}, \vec{x}')$
+	\item $k(\vec{x}, \vec{x}') = k_1(\vec{x}, \vec{x}') \cdot k_2(\vec{x}, \vec{x}')$
+	\item $k(\vec{x}, \vec{x}') = c \cdot k_1(\vec{x}, \vec{x}')$
+	\item $k(\vec{x}, \vec{x}') = f(k_1(\vec{x}, \vec{x}'))$
+	\item $k(\vec{z}, \vec{z}') = k_1(\mathcal{V}(\vec{z}), \mathcal{V}(\vec{z}'))$
+\end{itemize}
+
+
+\subsection{Interpretation}
+Kernels can be interpreted as similarity functions.
+They compute a function around each data point.
+The resulting function is then a linear combination of
+those functions, scaled by the $\alpha_i$s.

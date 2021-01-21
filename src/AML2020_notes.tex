@@ -1,0 +1,81 @@
+\documentclass{note}
+
+\course
+{}
+{Fall 2020}
+{ETH Zürich}
+{Prof. Joachim M. Buhmann and Carlos Cotrini}
+
+\assignment
+{Lecture Note: Advanced Machine Learning}
+{}
+
+\student
+{Tao SUN}
+{20-953-691}
+{Dept. of Computer Science, ETH Z\"urich}
+{taosun47@student.ethz.ch}
+
+\setcounter{chapter}{-1}
+
+\begin{document}
+\frontmatter
+
+\maketitle
+\tableofcontents
+
+\pagebreak
+
+\chapter*{Acknowledgement}
+This summary was made during the 2020 Fall Semester of the course \emph{Advanced Machine Learning} by Prof. Buhmann and Cotrini at ETH Z\"urich. 
+
+The main purpose of writing this is to familiarize me with the concepts and mathematical derivations in the course. Therefore, I do not guarantee the correctness and completeness of it.
+
+This note is mainly based on the lecture slides, tutorial materials and exercises. Some of the contents are referenced from the related books or papers. Also, some of the notes are cited from previous students, inclining @\texttt{michaelaerni}\footnote{Introduction to ML Lecture Notes, \url{https://github.com/michaelaerni/eth-introml-lecturenotes}}. The reference sources are stated in the footnotes. Many thanks to them!
+	
+\mainmatter
+
+	\setcounter{page}{0}
+    \pagenumbering{arabic}
+    \setcounter{page}{1}
+    
+	\newpage
+	\chapter{Math Preliminaries}
+	\input{chapters/math}
+
+	\newpage
+	\chapter{Basic Statistical Learning}
+	\input{chapters/representations}
+	
+	\newpage
+	\chapter{Linear Models}
+	\input{chapters/linear}
+	
+	\newpage
+	\chapter{Support Vector Machine}
+	\input{chapters/SVM}
+	
+	\newpage
+	\chapter{Gaussian Process}
+	\input{chapters/GP}
+	
+	\newpage
+	\chapter{Ensamble Methods}
+	\input{chapters/ensamble}
+	
+	\newpage
+	\chapter{Non-parametric Methods}
+	\input{chapters/clustering}
+	
+	\newpage
+	\chapter{Deep Learning}
+	\input{chapters/DL}
+	
+	\newpage
+	\chapter{PAC Learning}
+	\input{chapters/PAC}
+%	
+%	\newpage
+%	\chapter{Exercise}
+%	\section{Exercise 8} \input{chapters/ex8}
+\end{document}

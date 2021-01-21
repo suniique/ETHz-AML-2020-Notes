@@ -1,0 +1,297 @@
+\begin{tcolorbox}
+\begin{tabular}{ll}
+	$\bfX \in \R^{n \times d}$ & data matrix\\
+	$\bfy \in \R^{n}$ & label vector\\
+	$\mathcal{D} = \{(\mathbf{x}_i, y_i) \}_{i=1}^n$ & a data set with samples and labels \\
+	$\beta \in \R^d $ & weights \\
+	$\lambda \in \R_+$ & regularization scaler \\
+\end{tabular}
+\end{tcolorbox}
+
+\section{Linear Regression}
+\begin{definition}[Linear Regression or OLS]
+Let $ y = f(\bfx) = \beta^\top \bfx $ be the target function.
+\marginnote{\footnotesize For the bias term, using this trick: $x' = [x_1, x_2, \cdots, x_n, 1]$}[0cm]
+The optimization objective of linear regression is 
+\begin{equation}
+	\min_{\beta}\quad \sum_{i=1}^n (y_i - \beta^\top \bfx_i)^2
+\end{equation}
+\end{definition}
+Here, the objective is to obtain the minimal squared error, so it is also called ``Ordinary Least Squared'' (OLS) method.
+
+Instead of the squared error, other loss functions might also be used here. For example, with the the $L_p$ distance, we have
+\begin{equation}
+	\min_{\beta}\quad \sum_{i=1}^n \norm{ y_i - \beta^\top \bfx_i}_p
+\end{equation}
+\marginpar{\footnotesize Derivative of $L_p$:
+$\partial \norm{\vec{w}}_p^p / \partial w_j
+= p |w_j|^{p-1} \sign(w_j) $
+}where $\norm{\bfx}_p = \sqrt[p]{\sum_{i=1}^d{|x_i|^p}} $.
+$L_p$ loss is convex when $p \geq 1$.
+The $L_1$ loss puts less emphasis on large outliers.
+For a large $p$, the results are restricted to a region.
+For $0 \leq p < 1$, the function becomes non-convex but is even more
+robust towards outliers.
+
+\subsection{Ridge Regression}
+\begin{definition}[Ridge Regression]
+To condition the model's complexity, it is common to use the method called ``Ridge regression'', which introduces a $L_2$ constraint on the weight. 
+\begin{equation}
+	\min_{\beta}\quad \left\{\sum_{i=1}^{n}\left(y_{i}-\beta^{\top} \mathbf{x}_{i}\right)^{2} \right\}, \quad s.t.\ \sum_{j=1}^{d}\beta_{j}^2 \leq t.
+\end{equation}
+\end{definition}
+Using  Lagrange multipliers, it can be re-written into, 
+\marginpar{\footnotesize Should be $\lambda(\sum_j \beta^2_j - t)$, but $-\lambda t$ can be omitted since it is a constant.}
+\begin{equation}
+\widehat{\beta}=\argmin _{\beta}\ \left\{\sum_{i=1}^{n}\left(y_{i}-\beta^{\top} \mathbf{x}_{i}\right)^{2}+\lambda \sum_{j=1}^{d}\beta_{j}^2 \right\} 
+\end{equation}
+Note that, here $\lambda$ and $t$ has a one-to-one relationship.
+$L_2$ regression on weights is also called the ``weight decay'', as it decays weights to zero.
+
+\begin{property}
+Ridge regression has a \textbf{closed-form} solution of
+\begin{equation}
+\widehat{\beta} = (\bfX ^\top \bfX + \lambda \bfI )^{-1} \bfX^\top \bfy.
+\end{equation}
+\end{property}
+\begin{proof} Let
+\begin{align}
+	\widehat{\beta} & = \argmin_\beta\ J(\beta; \bfX, \bfy) :=  \argmin_\beta\ (\bfy-\beta^\top \bfX)^\top(\bfy-\beta^\top \bfX)+\lambda \beta^\top \beta
+\end{align}
+The derivative of $J(\beta; \bfX, \bfy)$ is 
+\begin{align}
+	\widehat{\beta} & = \argmin_\beta\ (\bfy-\beta^\top \bfX)^\top(\bfy-\beta^\top \bfX)+\lambda \beta^\top \beta
+\end{align}
+%\textit{Proof.} The objective can be written as,
+%\begin{equation}
+%	\begin{aligned}
+%		\min_{\beta}\ \sum_i (y_i - \beta^\top \bfx_i)^2 + \lambda || \beta ||_2^2 & = \min_{\beta}\ (\bfy - \beta^\top \bfx)^\top (\bfy - \beta^\top \bfx) + \lambda  \beta^\top \beta \\
+% 	& =\min_{\beta}\ (\bfy^\top \bfy - \bfx^\top \beta \bfy - \bfy^\top \beta^\top \bfx + \bfx^\top \beta \beta^\top \bfx) + \lambda  \beta^\top \beta \\
+%		& \doteq J(\beta)
+%	\end{aligned}
+%\end{equation}
+By differentiating the above equation and equating it to zero, we can get the optimal point.
+\begin{equation}
+\begin{aligned}
+	0 & = \frac{\partial J(\beta)}{\partial \beta} \\
+	& = -2 \bfX^\top \bfY + 2 \bfX^\top \bfX \beta + 2 \lambda \beta \\
+\end{aligned}
+\end{equation} 
+Therefore,
+\begin{equation}
+	(\bfX^\top \bfX + \lambda \bfI) \beta = \bfX^\top \bfY
+\end{equation}
+Multiplying $(\bfx^\top \bfx + \lambda \bfI)^{-1}$ on both sides, we get
+\begin{equation}
+	\hat{\beta} = (\bfX^\top \bfX + \lambda \bfI)^{-1} \bfX^\top \bfY
+\end{equation}
+\end{proof}
+
+Alternatively, the gradient descent can also be used to find the global optimum of ridge regression, since its objective is convex.
+The closed-form solution takes $\mathcal{O}(n^3)$ time. The gradient descent solution takes $\mathcal{O}(n d \log (1 / {\epsilon}))$ time.
+When $n$ becomes larger, the gradient descent method will be more efficient than closed-form solution.
+
+\subsection{Lasso Regression}
+Lasso regression is the linear regression whose weights regularized by $L_1$. The objective then becomes,
+\begin{equation*}
+\min_{{\beta}}\ \ {
+	\sum_{i=1}^n{(y_i - {w}^T {\bfx}_i)^2
+		+ \lambda \norm{{\beta}}_1
+}}
+\end{equation*}
+The $L_1$ penalty, in theory, encourages coefficients to be
+exactly zero. In ridge regression, weights decay relatively smoothly;
+in lasso regression, some weights may heavily increase
+with increasing $\lambda$. This results in some form in automatic feature selection. However, there is \textbf{no} closed-form solution for lasso regression.
+
+
+\section{Bias and Variance Trade-off}
+\subsection{From Optimization Perspective}
+\paragraph{Expectation of Bias} Ridge regression produces a \textbf{biased estimator} of the true parameter $\beta^*$. 
+The expectation of $\widehat{\beta}$ is,
+\begin{align}
+	\EEE{\widehat{\beta} \mid \bfX} & =  (\bfX ^\top \bfX + \lambda \bfI )^{-1} \bfX^\top \EE [\bfy\mid \bfX] \\
+	& = (\bfX ^\top \bfX + \lambda \bfI )^{-1} \bfX^\top \bfX \beta^* \quad \mathrm{(recall\ that } \ \bfy = \bfX \beta^* \mathrm{)} \\
+	& = (\bfX ^\top \bfX + \lambda \bfI )^{-1} (\bfX^\top \bfX + \lambda \bfI - \lambda \bfI)\beta^* \\
+	& = [\bfI - \lambda (\bfX ^\top \bfX + \lambda \bfI )^{-1}] \beta^*
+\end{align}
+So, the expectation of bias is,
+\begin{equation}
+	\EEE{\beta^* - \widehat{\beta} \mid \bfX} = \lambda (\bfX ^\top \bfX + \lambda \bfI )^{-1} \beta^*.
+\end{equation}
+
+\paragraph{Bias under Noisy Label}
+Let $\bfy = \bfX \beta^* + \xi$, $\xi \sim N(0, \sigma^2 \bfI)$. Conduct SVD decomposing on $\bfX \in \R^{n \times d}$,
+\begin{equation}
+	\bfX = \bfU \bfD \bfV^\top. \label{eq:svd_x}
+\end{equation} 
+When $\lambda=0$, the solution of $\widehat{\beta}$ is \marginpar{\footnotesize $ (\bfX ^\top \bfX )^{-1} = \\ (\bfV \bfD^\top \bfU^\top \bfU \bfD \bfV^\top)^{-1}  \\ {=(\bfV \bfD^\top \bfD \bfV^\top)^{-1}} \\ {= (\bfV^\top)^{-1} (\bfD^\top \bfD)^{-1} \bfV^{-1}} \\ {= \bfV (\bfD^\top \bfD)^{-1} \bfV^{-1}}  $. Thus, $ (\bfX ^\top \bfX )^{-1} \bfX^\top = \\ {\bfV (\bfD^\top \bfD)^{-1} \bfV^{-1}}\bfV \bfD^\top \bfU^\top \\ {= \bfV (\bfD^\top \bfD)^{-1} \bfD^\top \bfU^\top } \\ {= \bfV \bfD ^+ \bfU^\top}.$}
+\begin{align}
+	\widehat{\beta} & = (\bfX ^\top \bfX )^{-1} \bfX^\top \bfy \\
+	& = (\bfX ^\top \bfX )^{-1} \bfX^\top (\bfX \beta^* + \xi) \\
+	& = \beta^* + (\bfX ^\top \bfX )^{-1} \bfX^\top \xi.
+\end{align}
+Insert Eq. \ref{eq:svd_x}, we have 
+\begin{align}
+	\widehat{\beta} - \beta^* & =  (\bfX ^\top \bfX )^{-1} \bfX^\top \xi \\
+	& = \bfV \bfD ^+ \bfU^\top \xi.
+\end{align} 
+Here, $ \bfD ^+ $ is the Moore-Penrose pseudo inverse matrix of $\bfD$.
+
+\subsection{From Bayesian Perspective} \marginpar{\footnotesize Reference: Probabilistic AI, Lecture 2}
+\paragraph{Equivalence to Bayes}
+Assume the prior distribution of $\beta$ is $p(\beta) = \mathcal{N}(0, \sigma_p^2 \cdot \bfI)$, and it is independent of $\bfx_i$. Also, we assume the labels $y_i$ have some independent Gaussian noise, i.e. $y_i = \beta^\top \bfx_i + \xi_i$, $\xi \sim \mathcal{N}(0, \sigma_n^2)$. Then, the Ridge regression can be viewed as a \textbf{Bayesian inference}, where 
+\begin{equation}
+	\lambda = \sigma_n^2/\sigma_p^2
+\end{equation}
+\begin{proof} 
+According to the noise assumption, the likelihood of $y_{1:n}$ is
+\begin{equation}
+\begin{aligned}
+		p(y_{1: n} \mid \beta, \bfx_{i: n}) & = \prod_{i=1}^n p(y_i \mid w_1, x_i) = \mathcal{N}(y_i; \beta^\top \bfx, \sigma_n^2)
+\end{aligned}
+\end{equation}
+First, using Bayes' rule, we obtain the posterior of $\beta$,\begin{equation}
+\begin{aligned}
+	p(\beta \mid \bfx_{1:n}, y_{1:n}) & = \frac{1}{Z} p(\beta \mid \bfx_{1:n}) p(y_{1:n} \mid \beta, \bfx_{1:n}) \marginnote{\footnotesize\textit{This is Bayes' rule $p(\beta\mid y) = p(\beta) p(y \mid \beta) / p(y)$ given $\bfx$}}[0cm]
+	\\
+	& = \frac{1}{Z} p(\beta) \prod_i p(y_i \mid \beta, \bfx_i) \\
+	& = \frac{1}{Z} \frac{1}{Z_p} \exp\left( -\frac{1}{2 \sigma_p^2} || \beta ||^2\right) \cdot \frac{1}{Z_l} \prod_i \exp\left( -\frac{1}{\sigma_n^2} (y_i - \beta^\top \bfx_i)^2 \right) \\
+	& = \frac{1}{Z Z_p Z_l} \exp\left( -\frac{1}{2 \sigma_p^2} || \beta ||^2 - \frac{1}{2\sigma_n^2}\sum_{i=1}^n (y_i - \beta^\top \bfx_i)^2 \right)
+	\end{aligned}
+\end{equation}
+Here, $Z$, $Z_p$, $Z_l$ are the normalizers: $Z = p(y_{1:n} \mid \bfx_{1:n})$, $Z_p = \sqrt{2\pi} \sigma_p$, $Z_l = (2\pi)^{(n/2)} \sigma_n $. 
+
+Next, we maximize the posterior of $\beta$,
+\begin{equation}
+	\argmax_{\beta}\ p(\beta \mid \bfx_{1:n}, y_{1:n}) = \argmax_{\beta}\ \underbrace{\sum_{i=1}^n (y_i - \beta^\top \bfx_i)^2}_\mathrm{OLS} + \underbrace{\frac{\sigma_n^2}{\sigma_p^2} \norm{\beta}^2}_{\lambda \cdot  L_2\mathrm{Reg.}}
+\end{equation} 
+Note that the posterior has the same form of the Ridge Regression when $\lambda$ has the value of $\sigma_n^2 / \sigma_p^2$.  Hence, the Ridge Regression (Eq.~\ref{eq:rr}) can be viewed as a Bayesian Inference process theoretically.
+\end{proof}
+
+\paragraph{Uncertainty}
+	From a Bayesian perspective, we can not only know the optimal solution, we can also obtain the uncertainty for such solution. The uncertainty is denoted by variance of the posterior $p(\beta \mid \bfx_{1:n}, y_{1:n}) = \mathcal{N}(\bar{\mu}, \bar{\Sigma})$. The mean and variance of the posterior are,
+\begin{equation}
+\begin{array}{l}
+\bar{\mu}=\left(\bfx^{\top} \bfx+\sigma_{n}^{2} \bfI\right)^{-1} \bfx^{\top} \bfy \\
+\bar{\Sigma}=\left(\sigma_{n}^{-2} \bfx^\top \bfx+\bfI\right)^{-1}
+\end{array}
+\end{equation}
+\begin{proof} 
+We can get the close-form of the posterior.\footnote{For more details, please check here \url{https://en.wikipedia.org/wiki/Bayesian_linear_regression}}.
+\marginpar{\footnotesize ${\bfu^\top \bfA \bfu - 2\alpha^\top \bfu} = {(\bfu - \bfA^{-1}\alpha)^\top \bfA} (\bfu - \bfA^{-1}\alpha)$}
+\begin{equation}
+	\begin{aligned}
+		p(\beta\mid \bfx_{1:n}, y_{1:n}) & = \frac{1}{Z Z_p Z_l} \exp \left( -\frac{1}{2\sigma_p^2} || \beta ||^2 -\frac{1}{2\sigma_n^2} \sum_i || y_{i} - \beta^\top \bfx_{i} ||^2 \right) \\
+		& = \frac{1}{Z Z_p Z_l} \exp \left( -\frac{1}{2\sigma_p^2}\beta^\top \beta -\frac{1}{2\sigma_n^2}(\bfy^\top \bfy\ - 2 \bfy \beta^\top \bfx + \beta^\top \bfx^\top \bfx \beta) \right) \\
+		& \propto \exp \left( -\frac{1}{2} \left( \beta^\top (\frac{1}{\sigma_n^2} \bfx^\top \bfx + \frac{1}{\sigma_p^2} \bfI ) \beta -2(\bfx^\top \bfy)^\top \beta \right) \right) \\
+		& = \exp \left( -\frac{1}{2}(\beta - {{\mu}}')^\top {{\Sigma}}'^{-1} (\beta - {{\mu}}') \right)
+	\end{aligned}
+\end{equation}
+Here, 
+\begin{equation}
+	\begin{aligned}
+		{{\mu}}' & = (\sigma_n^{-2} \bfx^\top \bfx + \sigma_p^{-2} \bfI )^{-1} \bfx^\top \bfy \\
+		{{\Sigma}}' & = (\sigma_n^{-2} \bfx^\top \bfx + \sigma_p^{-2}\bfI )^{-1}
+	\end{aligned}
+\end{equation}
+After normalization, we can get the answer
+\begin{equation}
+\begin{array}{l}
+\bar{{\mu}}=\left(\bfx^{\top} \bfx+\sigma_{n}^{2} \bfI\right)^{-1} \bfx^{\top} \bfy \\
+\bar{{\Sigma}}=\left(\sigma_{n}^{-2} \bfx^\top \bfx+\bfI\right)^{-1}
+\end{array}
+\end{equation}
+\end{proof}
+
+\paragraph{Uncertainty in Prediction}
+	Define $f^* = \beta^\top \bfx^*$ as the model's output at $\bfx^*$. The uncertainty of the prediction is $$\bfx^{*\top}{\bar\Sigma} \bfx^* + \sigma_n^2.$$
+\begin{proof}
+\begin{equation}
+	p(f^* \mid \bfx_{1:n}, y_{1:n}, \bfx^*) = \int p(f^*\mid \beta, \bfx^*)\ p(\beta \mid \bfx_{1:n}, y_{1:n}, \bfx^*) \mathrm{d} \beta
+\end{equation}
+Since $\beta \sim \mathcal{N}(\bar{\mu}, \bar{\Sigma})$,
+\begin{equation}
+	p(f^* \mid \bfx_{1:n}, y_{1:n}, \bfx^*) = \mathcal{N}({\bar\mu}^\top \bfx^*, \bfx^{*\top}{\bar\Sigma} \bfx^*)
+\end{equation}
+Since $y^* = f^* + \xi$, $\xi \sim \mathcal{N}(0, \sigma_n^2)$,
+\begin{equation}
+	p(y^* \mid \bfx_{1:n}, y_{1:n}, \bfx^*) = \mathcal{N}({\bar\mu}^\top \bfx^*, \bfx^{*\top}{\bar\Sigma} \bfx^* + \sigma_n^2)
+\end{equation}
+Here, $\bar{{\mu}}$ and $\bar{{\Sigma}}$ are the mean and variance of posterior, respectively.
+\end{proof}
+
+Moreover, we can distinguish two forms of uncertainty:
+\begin{enumerate}
+	\item \textbf{Epistemic uncertainty} ($\bfx^{*\top}{\bar\Sigma} \bfx^*$): Uncertainty about the model due to the lack of data.
+	\item \textbf{Aleatoric uncertainty} ($\sigma_n^2$): Irreducible noise from measurement.
+\end{enumerate}
+
+\section{Linear Discriminative Analysis (LDA)}
+\subsection{Fisher's Linear Discriminant}
+To separate two classes of data points, Fisher's idea is to find a hyper-plane, on which the data points project with  maximal distance between the centers and minimal variance within the class.
+\begin{definition}[Separation]
+	Suppose two classes of observations have mean $\bfmu_1, \bfmu_2$ and covariances $\Sigma_1, \Sigma_2$. The separation between these two distributions is
+	$$
+	S(\bfw) =\frac {\sigma_{\text{between}}^{2}}{\sigma _{\text{within}}^{2}}={\frac {({ {\bfw}}\cdot { {\bfmu }}_{1}-{ {\bfw}}\cdot { {\bfmu }}_{2})^{2}}{{ {\bfw}}^\top\Sigma _{1}{ {\bfw}}+{ {\bfw}}^\top\Sigma _{2}{ {\bfw}}}}={\frac {({ {\bfw}}^\top ({ {\bfmu }}_{1}-{ {\bfmu }}_{2}))^{2}}{{ {\bfw}}^\top(\Sigma _{1}+\Sigma _{2}){ {\bfw}}}} := \frac{\bfw^\top \mathbf{S}_b \bfw}{\bfw^\top \mathbf{S}_w \bfw}
+	$$
+	Here, $\mathbf{S}_b = (\bfmu_1-\bfmu_2) (\bfmu_1-\bfmu_2)^\top $ and $\mathbf{S}_w = \Sigma _{1}+\Sigma _{2}$.
+\end{definition}
+\begin{theorem}[Solution]
+	The optimal solution of $\max_\bfw S(\bfw)$ satisfies
+	$$
+	\bfw^* \propto \mathbf{S}_{w}^{-1}(\bfmu_1 - \bfmu_2).
+	$$
+\end{theorem}
+\begin{proof}
+	Setting the derivatives of $S$ to $0$, we have
+	\begin{align}
+		0 = \diff{\bfw}S(\bfw) & = \frac{\bfw^\top \mathbf{S}_w \bfw \cdot 2\mathbf{S}_b \bfw - \bfw^\top \mathbf{S}_b \bfw \cdot 2\mathbf{S}_w \bfw}{(\bfw^\top \mathbf{S}_w \bfw)^2}  \\
+		\Longrightarrow \quad &  \bfw^\top \mathbf{S}_w \bfw \cdot \mathbf{S}_b \bfw - \bfw^\top \mathbf{S}_b \bfw \cdot \mathbf{S}_w \bfw = 0 \\
+		\Longrightarrow \quad &   \mathbf{S}_w^{-1} \mathbf{S}_b \bfw =\frac{ \bfw^\top \mathbf{S}_b \bfw}{\bfw^\top \mathbf{S}_w \bfw} \cdot  \bfw \\		
+		\Longrightarrow \quad &   \mathbf{S}_w^{-1} \mathbf{S}_b \bfw = \lambda  \bfw, \where \lambda = \frac{ \bfw^\top \mathbf{S}_b \bfw}{\bfw^\top \mathbf{S}_w \bfw}. \\	
+	\end{align}
+	This is an eigenvalue problem. However, consider the fact that $\mathbf{S}_b \bfw = (\bfmu_1-\bfmu_2) (\bfmu_1-\bfmu_2)^\top \bfw $, we have
+	\begin{equation}
+		\mathbf{S}_w^{-1} \mathbf{S}_b \bfw = \mathbf{S}_w^{-1} [\beta (\bfmu_1-\bfmu_2)] = \beta [\mathbf{S}_w^{-1} (\bfmu_1-\bfmu_2)], \where \beta = (\bfmu_1-\bfmu_2)^\top \bfw,
+	\end{equation}
+	which means the solution of the eigenvalue problem is just $\bfw^* = \beta \mathbf{S}_w^{-1} (\bfmu_1-\bfmu_2)$.
+\end{proof}
+\subsection{LDA with Gaussian Prior}
+\begin{definition}
+	One way to employ linear model to classification problem is Linear Discriminative Analysis (LDA). It given the probability of a sample $\bfx$ lying in the positive class,
+	\begin{equation}
+		p(y = 1 \mid \bfx) = \sigma(w^\top \bfx + w_0), \where \sigma(\bfx) = \frac{1}{1 + \exp(-\bfx)}
+	\end{equation}
+\end{definition}
+\begin{proof}
+	\begin{align}
+		p(y = 1\mid \bfx) & = \frac{p(\bfx \mid y = 1)\, p(y = 1)}{p(\bfx \mid y = 1)\, p(y = 1) + p(\bfx \mid y = 0)\, p(y = 0)} \\
+		& = \frac{1}{1 + \frac{p(\bfx \mid y = 0)\, p(y = 0)}{p(\bfx \mid y = 1)\, p(y = 1)}}\\
+		& = \frac{1}{1 + \exp\left(-\log  \frac{p(\bfx \mid y = 1)\, p(y = 1)}{p(\bfx \mid y = 0)\, p(y = 0)}\right) }\label{eq:lda1}
+	\end{align}
+If we assume that all $p(\bfx \mid y=i)$ are Gaussian distributions with the same variance $\Sigma$, we have
+\begin{equation}
+	\log p(\bfx \mid y=i) = -\frac{1}{2} \log |2 \pi \Sigma| - \frac{1}{2} \bfx^\top \Sigma^{-1} \bfx + \bfx^\top \Sigma^{-1} \mu_i - \frac{1}{2} \mu_i^\top \Sigma^{-1} \mu_i
+\end{equation}
+Then, \marginpar{\footnotesize ${w^\top \bfx = \bfx^\top w \in \R}$}
+\begin{equation}
+	\log \frac{p(\bfx \mid y = 1)\, p(y = 1)}{p(\bfx \mid y = 0)\, p(y = 0)} = \underbrace{\bfx^\top \Sigma^{-1}(\mu_1 - \mu_0)}_{\mathbf{x}^\top w} \underbrace{- \frac{1}{2}(\mu_1 \Sigma^{-1} \mu_1 - \mu_0 \Sigma^{-1} \mu_0) + \log \frac{p(y=1)}{p(y=0)}}_{w_0} \label{eq:lda}
+\end{equation}
+Insert Eq.~\ref{eq:lda} to Eq.~\ref{eq:lda1}, we have
+\begin{equation}
+	p(y = 1\mid \bfx) = \frac{1}{1 + \exp(w^\top \bfx + w_0)}
+\end{equation}
+This proof provides some intuition of the \textit{sigmoid} function $\sigma$. 
+\end{proof}
+
+\subsection{Quadratic Discriminative Analysis}
+\begin{definition}
+	We can extend LDA by using a quadratic function, named Quadratic Discriminative Analysis (QDA). It can model the clusters with different variance. It given the probability of a sample $\bfx$ lying in the positive class as,
+	\begin{equation}
+		p(y = 1 \mid \bfx) = \sigma(\bfx^\top W \bfx + w^\top \bfx + w_0), \quad \text{where}\ \sigma(\bfx) = \frac{1}{1 + \exp(-\bfx)}
+	\end{equation}
+\end{definition}
+\begin{proof}
+	Similar to LDA, but $p(\bfx \mid y=i)$ are Gaussian distributions with different variance of $\Sigma_i$.
+\end{proof}

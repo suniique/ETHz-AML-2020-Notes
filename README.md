@@ -7,3 +7,6 @@ This note was made during the 2020 Fall Semester of the course Advanced Machine 
 
 ## References
 This note is mainly based on the lecture slides, tutorial materials and exercises. Some of the contents are referenced from the related books or papers. Also, some of the notes are collected from previous students, inclining [@michaelaerni](https://github.com/michaelaerni/eth-introml-lecturenotes). The reference sources are stated in the footnotes. Many thanks to them!
+
+## Updates
+    -  2021/1/25: Minor fix
